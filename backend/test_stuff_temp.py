@@ -91,6 +91,8 @@ class TestSurprise:
         df_locations = pd.read_csv(csv_path)
         unique_categories = df_locations['category'].unique()
         print(unique_categories)
+
+
 # __get_token()
 # __call_SBB_api('Luzern', ['Bern'])
 ts = TestSurprise()
