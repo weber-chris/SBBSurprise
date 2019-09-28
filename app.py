@@ -1,7 +1,7 @@
 from flask import Flask, request
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import reqparse, Api, Resource
 from flask_cors import CORS
-import sqlite3
+from backend import surpriseGenerator
 
 app = Flask(__name__)
 api = Api(app)
@@ -15,10 +15,25 @@ class SBBSurprise(Resource):
         return 'SBBSurprise APP HackZurich2019'
 
     def post(self):
+        """
+        {
+          "date": "2019-10-25",
+          "budget": "low",
+          "start_location": "Winterthur",
+          "preferences": {"hiking":5,"culture":3,"concert":8,"sports":4},
+          "people":1
+        }
+        """
         body = request.get_json()
-        print(body['preferences']['hiking'])
+        surprise = surpriseGenerator.Suprise(
+            body['date'],
+            body['budget'],
+            body['start_location'],
+            body['preferences'],
+            body['people'])
+        offers = surprise.get_offers()
         # TODO do something with token
-        return body, 201
+        return offers, 201
 
 
 api.add_resource(SBBSurprise, '/')

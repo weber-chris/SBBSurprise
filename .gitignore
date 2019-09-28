@@ -1,7 +1,4 @@
-<<<<<<< HEAD
 __pycache__/
-=======
 .idea/*
-__pycache__/*
 venv/*
->>>>>>> fcab8d6d0ae17b9350abede4c76bad64f54b9662
+*.pyc
