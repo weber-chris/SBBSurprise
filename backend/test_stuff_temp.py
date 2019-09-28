@@ -68,11 +68,11 @@ class TestSurprise:
         return location_id, location_name
 
     def dump_locations(self):
-        csv_path = 'eventscrape/events.csv'
+        csv_path = 'eventscrape/events_cleaned.csv'
         df_locations = pd.read_csv(csv_path)
         df_locations['dest_id'], df_locations['dest_name'] = zip(*df_locations.apply(self.test_apply, axis=1))
 
-        df_locations.to_csv('eventscrape/events_enriched.csv', index=False)
+        df_locations.to_csv('eventscrape/events_enriched_cleaned.csv', index=False)
 
         print('finished')
 
@@ -86,8 +86,13 @@ class TestSurprise:
         self.enrich_id += 1
         return location_id, location_name
 
-
+    def get_unique_labels(self) :
+        csv_path = 'eventscrape/events_cleaned.csv'
+        df_locations = pd.read_csv(csv_path)
+        unique_categories = df_locations['category'].unique()
+        print(unique_categories)
 # __get_token()
 # __call_SBB_api('Luzern', ['Bern'])
 ts = TestSurprise()
-ts.dump_locations()
+# ts.dump_locations()
+ts.get_unique_labels()

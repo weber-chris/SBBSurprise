@@ -1,5 +1,8 @@
+import pandas as pd
+
+
 class Suprise:
-    def __init__(self, date, budget,  start_location, preferences, people):
+    def __init__(self, date, budget, start_location, preferences, people):
         """
         :param date: date when surprise should take place
         :param budget: low/mid/high/None
@@ -10,7 +13,7 @@ class Suprise:
         """
         self.date = date
         self.budget = budget
-        self.max_duration = 180 # max time for one way in train
+        self.max_duration = 180  # max time for one way in train
         self.start_location = start_location
         self.preferences = preferences
         self.people = people
@@ -19,39 +22,34 @@ class Suprise:
         """
         Gets list of possible destinations with respective possible activities and suitability score
         """
-        activities = self.__get_all_activities()
         destinations = self.__get_all_destinations()
-        suitable_offers = self.__get_suitable_offers(activities, destinations)
+        suitable_offers = self.__get_suitable_offers(destinations)
         scored_offers = self.__score_suitable_offers(suitable_offers)
         return scored_offers
 
-    def __get_all_activities(self):
-        """
-        Get all activities with their labels and cities
-        """
-        # TODO read from DB/CSV
-        return []
-
     def __get_all_destinations(self):
         """
-        Get all destinations with their hints
+        Get all destinations with their hints and activities
         """
+        csv_path = 'backend/eventscrape/events_enriched_cleaned.csv'
+        df_locations = pd.read_csv(csv_path)
         # TODO read from DB/CSV
-        return []
+        return df_locations[['dest_id', 'dest_name', 'category', 'title']]
 
-    def __get_suitable_offers(self, activities, destinations):
+    def __get_suitable_offers(self, destinations):
         """
         Get all cities that match offers
         """
+        print(destinations.to_string())
         # TODO filter activities based on preferences
-        suitable_destinations = self.__get_suitable_destinations(activities, destinations)
+        suitable_destinations = self.__get_suitable_destinations(destinations)
         # TODO call SBB API for all destinations
         offers = self.__call_SBB_api(suitable_destinations)
         # TODO filter offers based on duration and cost
         suitable_offers = self.__filter_offers(offers)
         return []
 
-    def __get_suitable_destinations(self, activities, destinations):
+    def __get_suitable_destinations(self, destinations):
         """
         Get all destinations that match preferences
         """
