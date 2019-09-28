@@ -2,7 +2,13 @@ import pandas as pd
 
 
 class Suprise:
-    def __init__(self, date, budget, start_location, preferences, people):
+    all_categories = ['SBB_lh_games_fun', 'SBB_lh_adventure_panorama_trips', 'SBB_lh_nature_sights_of_interest',
+                      'SBB_lh_zoo_animal_parks', 'SBB_lh_bike_ebike', 'SBB_lh_wellness_relaxation', 'SBB_lh_hiking',
+                      'SBB_lh_art_culture_museums', 'SBB_lh_concerts_musicals_festivals', 'SBB_lh_markets_shopping',
+                      'SBB_lh_short_trips_in_switzerland', 'SBB_lh_city_trips']
+
+    def __init__(self, startLocation, departureDate, departureTime, returnTime, budget, personCountFull,
+                 personCountHalf, preferences):
         """
         :param date: date when surprise should take place
         :param budget: low/mid/high/None
@@ -11,12 +17,14 @@ class Suprise:
         :param preferences: dictionary for activity types with score
         :param people: how many people will participate
         """
-        self.date = date
+        self.startLocation = startLocation
+        self.departureDate = departureDate
+        self.departureTime = departureTime
+        self.returnTime = returnTime
         self.budget = budget
-        self.max_duration = 180  # max time for one way in train
-        self.start_location = start_location
+        self.personCountFull = personCountFull
+        self.personCountHalf = personCountHalf
         self.preferences = preferences
-        self.people = people
 
     def get_offers(self):
         """
@@ -53,6 +61,7 @@ class Suprise:
         """
         Get all destinations that match preferences
         """
+
         # TODO merge activities & cities
         # should we already kick out some destinations here?
         return []

@@ -17,22 +17,39 @@ class SBBSurprise(Resource):
     def post(self):
         """
         {
-          "date": "2019-10-25",
-          "budget": "low",
-          "start_location": "Winterthur",
-          "preferences": {"hiking":5,"culture":3,"concert":8,"sports":4},
-          "people":1
+            startLocation: "Current Location", //bahnhofsname
+            departureDate: new Date(), //json datum "2014-01-01T23:28:56.782Z"
+            departureTime: "early", //early oder late  -> vorschlag early= abfahrt zwischen 6 und 8, late zwischen 8 und 10
+            returnTime: "late", //early oder late -> vorschlag early= ruckkinft zwischen 4pm und 6pm, late zwischen 8pm und 10pm
+            budget: "no", // low, mid, hi, no, low < 20, mid < 50, hi < 9999, no = hi
+            personCountFull: 1, // 0-9
+            personCountHalf: 0 // 0-9
+            preferences: [pref1, pref2] //list of f
         }
+
+        example for postman:
+{
+"startLocation": "Zurich HB",
+"departureDate": "2014-01-01T23:28:56.782Z",
+"departureTime": "early",
+"returnTime": "late",
+"budget": "mid",
+"personCountFull": 1,
+"personCountHalf": 0,
+"preferences": ["SBB_lh_games_fun", "SBB_lh_adventure_panorama_trips", "SBB_lh_zoo_animal_parks"]
+}
         """
         body = request.get_json()
         surprise = surpriseGenerator.Suprise(
-            body['date'],
+            body['startLocation'],
+            body['departureDate'],
+            body['departureTime'],
+            body['returnTime'],
             body['budget'],
-            body['start_location'],
-            body['preferences'],
-            body['people'])
+            body['personCountFull'],
+            body['personCountHalf'],
+            body['preferences'])
         offers = surprise.get_offers()
-        # TODO do something with token
         return offers, 201
 
 
