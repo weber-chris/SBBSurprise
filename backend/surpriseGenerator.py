@@ -74,7 +74,6 @@ class Suprise:
         """
         suitable_destinations = destinations[destinations['category'].isin(self.preferences)]
 
-        # TODO call SBB API for all destinations
         offers = self.__call_SBB_api(suitable_destinations)
         # TODO filter offers based on duration and cost
         suitable_offers = self.__filter_offers(offers)
@@ -95,15 +94,21 @@ class Suprise:
         """
         # get id & name of start location
         start_id, start_name = self.__query_location(self.startLocation)
-        print(start_id)
-        # TODO call api for each destination
+        saver_trips = []
         for id, dest in suitable_destinations.iterrows():
-            # trip_id = self.__query_trip(start_id, dest['dest_id'])
-            # TODO query price for each trip
-            trip_id = self.__query_trip(start_id, dest['dest_id'])
+            if len(saver_trips) > 5:
+                break
+            if start_id != dest['dest_id']:
+                query_trip_result = self.__query_trip(start_id, dest['dest_id'])
+                if query_trip_result:
+                    trip_id, start_time = query_trip_result[0], query_trip_result[1]
+                    super_destination = self.__query_price(trip_id)
+                    if super_destination:
+                        dest = Destination(dest['dest_id'], super_destination[0], super_destination[1], start_time)
+                        saver_trips.append(dest)
 
-            break
-        return []
+        print(saver_trips)
+        return saver_trips
 
     def __query_location(self, location):
         url = "https://b2p-int.api.sbb.ch/api/locations"
@@ -148,11 +153,39 @@ class Suprise:
 
         response = requests.request("GET", url, headers=headers, params=querystring)
         json_response = response.json()
-        trip_id = json_response[0]['tripId']
-        return trip_id
+        if len(json_response) > 0:
+            trip_id = json_response[0]['tripId']
+            start_time = json_response[0]['segments'][0]['stops'][0]['departureDateTime']
+            return trip_id, start_time
 
-    def __query_price(self):
-        pass
+    def __query_price(self, trip_id):
+        url = "https://b2p-int.api.sbb.ch/api/trip-offers"
+
+        querystring = {"passengers": "paxa;42;half-fare",
+                       "tripId": trip_id}
+
+        headers = {
+            'Authorization': "Bearer {}".format(self.token),
+            'Cache-Control': "no-cache",
+            'Accept': "application/json",
+            'Accept-Language': "en",
+            'X-Contract-Id': "HAC222P",
+            'X-Conversation-Id': self.conversation_id,
+            'Host': "b2p-int.api.sbb.ch",
+            'Accept-Encoding': "gzip, deflate",
+            'Connection': "keep-alive",
+            'cache-control': "no-cache"
+        }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        json_response = response.json()
+        # find if one with productID 4004 (super saver)
+        super_saver = next((item for item in json_response if item['offers'][0]['productId'] == 4004), None)
+        # find one with productID 125 (point-to-point)
+        point_to_point = next((item for item in json_response if item['offers'][0]['productId'] == 125), None)
+        if super_saver and point_to_point:
+            return super_saver['totalPrice'], point_to_point['totalPrice']
+        # print('price: {}, super-saver: {}'.format(price,super_saver))
 
     def __filter_offers(self, offers):
         """
@@ -199,13 +232,16 @@ class Suprise:
 
 
 class Destination:
-    name = None
-    hints = None
-    activities = None
-    price = -1
-    score = -1
+    dest_id = None
+    price_saver = -1
+    price_normal = -1
     start_time = None
 
-    def __init__(self, name, hints):
-        self.name = name
-        self.hints = hints
+    score = -1
+    activities = None
+
+    def __init__(self, dest_id, price_saver, price_normal, start_time):
+        self.dest_id = dest_id
+        self.price_saver = price_saver
+        self.price_normal = price_normal
+        self.start_time = start_time
