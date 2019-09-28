@@ -2,6 +2,7 @@ import pandas as pd
 import requests
 import uuid
 import operator
+from datetime import datetime
 
 
 class Suprise:
@@ -28,9 +29,19 @@ class Suprise:
         self.personCountFull = personCountFull
         self.personCountHalf = personCountHalf
         self.preferences = preferences
+        if self.budget == 'low':
+            self.budget_CHF = 20
+        elif self.budget == 'mid':
+            self.budget_CHF = 40
+        else:
+            self.budget_CHF = 9999
 
         self.token = self.__get_token()
         self.conversation_id = str(uuid.uuid4())
+        self.max_duration = 180  # minutes
+        self.min_duration = 30  # minutes
+
+        self.destinations = []
 
     @staticmethod
     def __get_token():
@@ -54,8 +65,8 @@ class Suprise:
         """
         Gets list of possible destinations with respective possible activities and suitability score
         """
-        destinations = self.__get_all_destinations()
-        suitable_offers = self.__get_suitable_offers(destinations)
+        self.__get_all_destinations()
+        suitable_offers = self.__get_suitable_offers()
         scored_offers = self.__score_suitable_offers(suitable_offers)
         return scored_offers
 
@@ -65,28 +76,16 @@ class Suprise:
         """
         csv_path = 'backend/eventscrape/events_enriched_cleaned.csv'
         df_locations = pd.read_csv(csv_path)
-        # TODO read from DB/CSV
-        return df_locations[['dest_id', 'dest_name', 'category', 'title']]
+        self.destinations = df_locations[['dest_id', 'dest_name', 'category', 'title']]
 
-    def __get_suitable_offers(self, destinations):
+    def __get_suitable_offers(self):
         """
         Get all cities that have offers
         """
-        suitable_destinations = destinations[destinations['category'].isin(self.preferences)]
+        suitable_destinations = self.destinations[self.destinations['category'].isin(self.preferences)]
 
         offers = self.__call_SBB_api(suitable_destinations)
-        # TODO filter offers based on duration and cost
-        suitable_offers = self.__filter_offers(offers)
-        return []
-
-    # def __get_suitable_destinations(self, destinations):
-    #     """
-    #     Get all destinations that match preferences
-    #     """
-    #     suitable_destinations = destinations[destinations['category'].isin(self.preferences)]
-    #     # TODO merge activities & cities
-    #     # should we already kick out some destinations here?
-    #     return []
+        return offers
 
     def __call_SBB_api(self, suitable_destinations):
         """
@@ -101,11 +100,15 @@ class Suprise:
             if start_id != dest['dest_id']:
                 query_trip_result = self.__query_trip(start_id, dest['dest_id'])
                 if query_trip_result:
-                    trip_id, start_time = query_trip_result[0], query_trip_result[1]
+                    trip_id, start_time, duration = query_trip_result[0], query_trip_result[1], query_trip_result[2]
                     super_destination = self.__query_price(trip_id)
                     if super_destination:
-                        dest = Destination(dest['dest_id'], super_destination[0], super_destination[1], start_time)
+                        dest = Destination(dest['dest_id'], super_destination[0], super_destination[1], start_time,
+                                           duration, self.startLocation)
                         saver_trips.append(dest)
+                        print('Dest_Id: {}, Price: {}, Normal: {}, Start: {}'.format(dest.dest_id, dest.price_saver,
+                                                                                     dest.price_normal,
+                                                                                     dest.start_time))
 
         print(saver_trips)
         return saver_trips
@@ -156,7 +159,12 @@ class Suprise:
         if len(json_response) > 0:
             trip_id = json_response[0]['tripId']
             start_time = json_response[0]['segments'][0]['stops'][0]['departureDateTime']
-            return trip_id, start_time
+            end_time = json_response[0]['segments'][-1]['stops'][-1]['arrivalDateTime']
+            start_datetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S+01:00')
+            end_datetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S+01:00')
+            duration = (end_datetime - start_datetime).seconds
+            if self.max_duration * 60 > duration > self.min_duration * 60:
+                return trip_id, start_time, duration
 
     def __query_price(self, trip_id):
         url = "https://b2p-int.api.sbb.ch/api/trip-offers"
@@ -181,52 +189,33 @@ class Suprise:
         json_response = response.json()
         # find if one with productID 4004 (super saver)
         super_saver = next((item for item in json_response if item['offers'][0]['productId'] == 4004), None)
+
         # find one with productID 125 (point-to-point)
         point_to_point = next((item for item in json_response if item['offers'][0]['productId'] == 125), None)
         if super_saver and point_to_point:
-            return super_saver['totalPrice'], point_to_point['totalPrice']
+            if super_saver['totalPrice'] <= self.budget_CHF * 100:
+                return super_saver['totalPrice'], point_to_point['totalPrice']
         # print('price: {}, super-saver: {}'.format(price,super_saver))
-
-    def __filter_offers(self, offers):
-        """
-        Drop all offers that are against price/duration constraint
-        """
-        # TODO drop unsuitable offers
-        return []
 
     def __score_suitable_offers(self, suitable_offers):
         """
         Give a suitability score, weighted based on activity-preferences and price
         """
-        # TODO calculate weighted score that predicts, how much a user "likes" the destination
-
-        # check that score adds up to 1.0!
-        price_relevance = 1.0
-
-        if self.budget == 'no':
-            self.budget == 'hi'
-
         # filter for non-existent prices
-        suitable_offers = [x for x in suitable_offers if not x.price == -1]
+        suitable_offers = [x for x in suitable_offers if not x.price_saver == -1]
 
         for destination in suitable_offers:
+            full_dest = self.destinations[self.destinations['dest_id'] == destination.dest_id]
+            destination.dest_name = full_dest['dest_name'].iloc[0]
+            destination.activities = [{x[0]: x[1]} for x in full_dest[['title', 'category']].values]
+            # destination.activities = full_dest[['title', 'category']].to_string()
+            # change score based on price
             if self.budget == 'low':
-                if destination.price < 20:
-                    destination.score += 100 * price_relevance
-                elif destination.price < 50:
-                    destination.score += 50 * price_relevance
+                destination.score += destination.price_saver * .1
             elif self.budget == 'mid':
-                if destination.price < 20:
-                    destination.score += 50 * price_relevance
-                elif destination.price < 50:
-                    destination.score += 100 * price_relevance
-            elif self.budget == 'hi':
-                if destination.price < 20:
-                    destination.score += 10 * price_relevance
-                elif destination.price < 50:
-                    destination.score += 50 * price_relevance
-                else:
-                    destination.score += 100 * price_relevance
+                destination.score += destination.price_saver * 0.075
+            else:
+                destination.score += destination.price_saver * .05
 
         return sorted(suitable_offers, key=operator.attrgetter('score'))
 
@@ -235,13 +224,18 @@ class Destination:
     dest_id = None
     price_saver = -1
     price_normal = -1
+    duration = -1
     start_time = None
 
-    score = -1
+    score = 0
     activities = None
+    dest_name = None
+    start_name = None
 
-    def __init__(self, dest_id, price_saver, price_normal, start_time):
+    def __init__(self, dest_id, price_saver, price_normal, start_time, duration, start_name):
         self.dest_id = dest_id
         self.price_saver = price_saver
         self.price_normal = price_normal
         self.start_time = start_time
+        self.duration = duration
+        self.start_name = start_name

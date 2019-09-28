@@ -1,7 +1,8 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_restful import reqparse, Api, Resource
 from flask_cors import CORS
 from backend import surpriseGenerator
+import json
 
 app = Flask(__name__)
 api = Api(app)
@@ -40,6 +41,7 @@ class SBBSurprise(Resource):
 }
         """
         body = request.get_json()
+
         surprise = surpriseGenerator.Suprise(
             body['startLocation'],
             body['departureDate'],
@@ -50,7 +52,18 @@ class SBBSurprise(Resource):
             body['personCountHalf'],
             body['preferences'])
         offers = surprise.get_offers()
-        return offers, 201
+        return [{
+            "start_name": o.start_name,
+            "dest_name": o.dest_name,
+            "price_saver": o.price_saver,
+            "price_normal": o.price_normal,
+            "start_time": o.start_time,
+            "duration": o.duration,
+            "score": o.score,
+            "activities": o.activities
+        } for o in offers], 201
+        # return jsonify(offers), 201
+        # return json.dumps([offer.__dict__ for offer in offers]), 201
 
 
 api.add_resource(SBBSurprise, '/')
