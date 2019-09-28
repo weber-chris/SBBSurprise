@@ -3,6 +3,7 @@ import requests
 import uuid
 import operator
 
+
 class Suprise:
     all_categories = ['SBB_lh_games_fun', 'SBB_lh_adventure_panorama_trips', 'SBB_lh_nature_sights_of_interest',
                       'SBB_lh_zoo_animal_parks', 'SBB_lh_bike_ebike', 'SBB_lh_wellness_relaxation', 'SBB_lh_hiking',
@@ -93,16 +94,18 @@ class Suprise:
         Call SBB Api to get offer for activity-based filtered cities within time & duration boundaries
         """
         # get id & name of start location
-        start_id, start_name = self.query_location(self.startLocation)
+        start_id, start_name = self.__query_location(self.startLocation)
         print(start_id)
         # TODO call api for each destination
-        for dest in suitable_destinations:
+        for id, dest in suitable_destinations.iterrows():
             # trip_id = self.__query_trip(start_id, dest['dest_id'])
             # TODO query price for each trip
-            pass
+            trip_id = self.__query_trip(start_id, dest['dest_id'])
+
+            break
         return []
 
-    def query_location(self, location):
+    def __query_location(self, location):
         url = "https://b2p-int.api.sbb.ch/api/locations"
 
         querystring = {"name": location}
@@ -126,6 +129,29 @@ class Suprise:
         return location_id, location_name
 
     def __query_trip(self, from_id, to_id):
+        url = "https://b2p-int.api.sbb.ch/api/trips"
+
+        querystring = {"arrivalDeparture": "ED", "date": "2019-11-27", "destinationId": to_id,
+                       "originId": from_id, "time": "10:22"}
+
+        headers = {
+            'Authorization': "Bearer {}".format(self.token),
+            'Cache-Control': "no-cache",
+            'Accept': "application/json",
+            'X-Contract-Id': "HAC222P",
+            'X-Conversation-Id': self.conversation_id,
+            'Host': "b2p-int.api.sbb.ch",
+            'Accept-Encoding': "gzip, deflate",
+            'Connection': "keep-alive",
+            'cache-control': "no-cache"
+        }
+
+        response = requests.request("GET", url, headers=headers, params=querystring)
+        json_response = response.json()
+        trip_id = json_response[0]['tripId']
+        return trip_id
+
+    def __query_price(self):
         pass
 
     def __filter_offers(self, offers):
@@ -140,14 +166,14 @@ class Suprise:
         Give a suitability score, weighted based on activity-preferences and price
         """
         # TODO calculate weighted score that predicts, how much a user "likes" the destination
-        
-        #check that score adds up to 1.0!
+
+        # check that score adds up to 1.0!
         price_relevance = 1.0
 
         if self.budget == 'no':
             self.budget == 'hi'
 
-        #filter for non-existent prices
+        # filter for non-existent prices
         suitable_offers = [x for x in suitable_offers if not x.price == -1]
 
         for destination in suitable_offers:
@@ -170,7 +196,6 @@ class Suprise:
                     destination.score += 100 * price_relevance
 
         return sorted(suitable_offers, key=operator.attrgetter('score'))
-
 
 
 class Destination:
