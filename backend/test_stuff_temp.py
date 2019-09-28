@@ -76,11 +76,14 @@ class TestSurprise:
 
         print('finished')
 
+    enrich_id = 1
+
     def test_apply(self, row):
         activity_loc = row.loc['loc_name']
         # get id & name of destination
         location_id, location_name = self.query_location(activity_loc, self.token, self.conversation_id)
-        print(location_name)
+        print('{}/596'.format(self.enrich_id))
+        self.enrich_id += 1
         return location_id, location_name
 
 
