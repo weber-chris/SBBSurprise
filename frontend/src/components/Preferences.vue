@@ -81,9 +81,10 @@ export default {
     getOffers: function () {
       this.$parent.user.preferences = this.preferences;
       console.log(this.$parent.user);
-      this.$http.get("/")
+      this.$http.get("/", {params: this.$parent.user})
         .then((result) => {
         this.data = result.data;
+        console.log(this.data);
       })
     }
   }
