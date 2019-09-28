@@ -24,3 +24,7 @@ export default {
   }
 }
 </script>
+
+<stlye scoped>
+
+</style>
