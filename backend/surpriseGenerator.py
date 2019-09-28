@@ -1,7 +1,7 @@
 import pandas as pd
 import requests
 import uuid
-
+import operator
 
 class Suprise:
     all_categories = ['SBB_lh_games_fun', 'SBB_lh_adventure_panorama_trips', 'SBB_lh_nature_sights_of_interest',
@@ -140,7 +140,37 @@ class Suprise:
         Give a suitability score, weighted based on activity-preferences and price
         """
         # TODO calculate weighted score that predicts, how much a user "likes" the destination
-        return []
+        
+        #check that score adds up to 1.0!
+        price_relevance = 1.0
+
+        if self.budget == 'no':
+            self.budget == 'hi'
+
+        #filter for non-existent prices
+        suitable_offers = [x for x in suitable_offers if not x.price == -1]
+
+        for destination in suitable_offers:
+            if self.budget == 'low':
+                if destination.price < 20:
+                    destination.score += 100 * price_relevance
+                elif destination.price < 50:
+                    destination.score += 50 * price_relevance
+            elif self.budget == 'mid':
+                if destination.price < 20:
+                    destination.score += 50 * price_relevance
+                elif destination.price < 50:
+                    destination.score += 100 * price_relevance
+            elif self.budget == 'hi':
+                if destination.price < 20:
+                    destination.score += 10 * price_relevance
+                elif destination.price < 50:
+                    destination.score += 50 * price_relevance
+                else:
+                    destination.score += 100 * price_relevance
+
+        return sorted(suitable_offers, key=operator.attrgetter('score'))
+
 
 
 class Destination:
