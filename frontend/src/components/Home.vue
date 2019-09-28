@@ -1,5 +1,5 @@
 <template>
-  <div id="Home">
+  <div id="home">
     <h1>{{ data }}</h1>
     <button v-on:click="fetchHello">Click me!</button>
   </div>
@@ -15,8 +15,7 @@ export default {
   },
   methods: {
     fetchHello: function () {
-      const baseURI = 'http://localhost:5000'
-      this.$http.get(baseURI)
+      this.$http.get("/")
         .then((result) => {
         this.data = result.data;
       })
