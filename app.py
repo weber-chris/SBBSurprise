@@ -1,8 +1,7 @@
 from flask import Flask, request
-from flask_restful import reqparse, abort, Api, Resource
+from flask_restful import reqparse, Api, Resource
 from flask_cors import CORS
-import sqlite3
-import surpriseGenerator
+from backend import surpriseGenerator
 
 app = Flask(__name__)
 api = Api(app)
