@@ -21,10 +21,26 @@ class Suprise:
         :param preferences: dictionary for activity types with score
         :param people: how many people will participate
         """
-        self.startLocation = startLocation
-        self.departureDate = departureDate
-        self.departureTime = departureTime
-        self.returnTime = returnTime
+        if startLocation == 'Current Location':
+            self.startLocation = 'Zurich HB'
+        else:
+            self.startLocation = startLocation
+
+        if departureTime == 'early':
+            self.departure_timestamp = '06:00'
+        else:
+            self.departure_timestamp = '09:00'
+        if returnTime == 'early':
+            self.return_timestamp = '16:00'
+        else:
+            self.return_timestamp = '20:00'
+        self.trip_date = departureDate[:10]
+        # self.departure_datetime = datetime.strptime('{}{}'.format(departureDate[:10], dep_timestamp), '%Y-%m-%d%H:%M')
+        # self.departureDate = departureDate
+        # self.departureTime = departureTime
+        # self.returnTime = returnTime
+        # self.return_datetime = datetime.strptime('{}{}'.format(departureDate[:10], ret_timestamp), '%Y-%m-%d%H:%M')
+
         self.budget = budget
         self.personCountFull = personCountFull
         self.personCountHalf = personCountHalf
@@ -95,7 +111,7 @@ class Suprise:
         start_id, start_name = self.__query_location(self.startLocation)
         saver_trips = []
         for id, dest in suitable_destinations.iterrows():
-            if len(saver_trips) > 5:
+            if len(saver_trips) > 1:
                 break
             if start_id != dest['dest_id']:
                 query_trip_result = self.__query_trip(start_id, dest['dest_id'])
@@ -139,8 +155,8 @@ class Suprise:
     def __query_trip(self, from_id, to_id):
         url = "https://b2p-int.api.sbb.ch/api/trips"
 
-        querystring = {"arrivalDeparture": "ED", "date": "2019-11-27", "destinationId": to_id,
-                       "originId": from_id, "time": "10:22"}
+        querystring = {"arrivalDeparture": "ED", "date": self.trip_date, "destinationId": to_id,
+                       "originId": from_id, "time": self.departure_timestamp}
 
         headers = {
             'Authorization': "Bearer {}".format(self.token),
@@ -160,8 +176,8 @@ class Suprise:
             trip_id = json_response[0]['tripId']
             start_time = json_response[0]['segments'][0]['stops'][0]['departureDateTime']
             end_time = json_response[0]['segments'][-1]['stops'][-1]['arrivalDateTime']
-            start_datetime = datetime.strptime(start_time, '%Y-%m-%dT%H:%M:%S+01:00')
-            end_datetime = datetime.strptime(end_time, '%Y-%m-%dT%H:%M:%S+01:00')
+            start_datetime = datetime.strptime(start_time[:19], '%Y-%m-%dT%H:%M:%S')
+            end_datetime = datetime.strptime(end_time[:19], '%Y-%m-%dT%H:%M:%S')
             duration = (end_datetime - start_datetime).seconds
             if self.max_duration * 60 > duration > self.min_duration * 60:
                 return trip_id, start_time, duration
