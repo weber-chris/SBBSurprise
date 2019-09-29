@@ -130,6 +130,7 @@ class Surprise:
             dest = Destination(dest['dest_id'], trip_priced_go[0] + trip_priced_return[0],
                                trip_priced_go[1] + trip_priced_return[1], query_trip_result_go[1],
                                query_trip_result_return[1], query_trip_result_go[2], query_trip_result_return[2],
+                               query_trip_result_go[3], query_trip_result_return[3],
                                self.startLocation)
             saver_trips.append(dest)
             print('Dest_Id: {}, Price: {}, Normal: {}, Start-Go: {}, Start-Return: {}'.format(dest.dest_id,
@@ -191,7 +192,7 @@ class Surprise:
             end_datetime = datetime.strptime(end_time[:19], '%Y-%m-%dT%H:%M:%S')
             duration = (end_datetime - start_datetime).seconds
             if self.max_duration * 60 > duration > self.min_duration * 60:
-                return trip_id, start_time, duration
+                return trip_id, start_datetime, end_datetime, duration
 
     def __query_price(self, trip_id):
         url = "https://b2p-int.api.sbb.ch/api/trip-offers"
@@ -270,13 +271,31 @@ class Destination:
     dest_name = None
     start_name = None
 
-    def __init__(self, dest_id, price_saver, price_normal, start_time_go, start_time_return, duration_go,
+    def __init__(self, dest_id, price_saver, price_normal, start_time_go, start_time_return, end_time_go,
+                 end_time_return, duration_go,
                  duration_return, start_name):
         self.dest_id = dest_id
         self.price_saver = price_saver
         self.price_normal = price_normal
-        self.start_time_go = start_time_go
-        self.start_time_return = start_time_return
+
+        self.start_time_go = self.datetime_to_hour_and_minute(start_time_go)
+        self.start_time_go_approx = self.datetime_to_approx_hour(start_time_go)
+        self.start_time_return = self.datetime_to_hour_and_minute(start_time_return)
+        self.start_time_return_approx = self.datetime_to_approx_hour(start_time_return)
+
+        self.end_time_go = self.datetime_to_hour_and_minute(end_time_go)
+        self.end_time_go_approx = self.datetime_to_approx_hour(end_time_go)
+        self.end_time_return = self.datetime_to_hour_and_minute(end_time_return)
+        self.end_time_return_approx = self.datetime_to_approx_hour(end_time_return)
+
         self.duration_go = duration_go
         self.duration_return = duration_return
         self.start_name = start_name
+
+    @staticmethod
+    def datetime_to_approx_hour(d):
+        return f'{round(d.hour + d.minute / 60.):02}:00'
+
+    @staticmethod
+    def datetime_to_hour_and_minute(d):
+        return f'{d.hour:02}:{d.minute:02}'
