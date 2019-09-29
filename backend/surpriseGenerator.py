@@ -5,7 +5,7 @@ import operator
 from datetime import datetime
 
 
-class Suprise:
+class Surprise:
     all_categories = ['SBB_lh_games_fun', 'SBB_lh_adventure_panorama_trips', 'SBB_lh_nature_sights_of_interest',
                       'SBB_lh_zoo_animal_parks', 'SBB_lh_bike_ebike', 'SBB_lh_wellness_relaxation', 'SBB_lh_hiking',
                       'SBB_lh_art_culture_museums', 'SBB_lh_concerts_musicals_festivals', 'SBB_lh_markets_shopping',
@@ -227,6 +227,7 @@ class Suprise:
     def __score_suitable_offers(self, suitable_offers):
         """
         Give a suitability score, weighted based on activity-preferences and price
+        LOWER score is BETTER!
         """
         # filter for non-existent prices
         suitable_offers = [x for x in suitable_offers if not x.price_saver == -1]
@@ -235,20 +236,36 @@ class Suprise:
             full_dest = self.destinations[self.destinations['dest_id'] == destination.dest_id]
             destination.dest_name = full_dest['dest_name'].iloc[0]
             destination.activities = [{x[0]: x[1]} for x in full_dest[['title', 'category']].values]
-            # destination.activities = full_dest[['title', 'category']].to_string()
-            # change score based on price
-            if self.budget == 'low':
-                destination.score += destination.price_saver * .1
-            elif self.budget == 'mid':
-                destination.score += destination.price_saver * 0.075
-            else:
-                destination.score += destination.price_saver * .05
 
+            # 1. change score based on price (lower budget = more price sensitive)
+            if self.budget == 'low':
+                price_sensitivity = 0.85
+            elif self.budget == 'mid':
+                price_sensitivity = 0.9
+            else:
+                price_sensitivity = 0.95
+
+            if destination.price_saver < 15:
+                destination.score *= 0.9 * price_sensitivity
+            elif destination.price_saver < 25:
+                destination.score *= 0.95 * price_sensitivity
+
+            # 2. how many activities match user preferences?
+            matches = len([i for i in full_dest['category'].values if i in self.preferences])
+            if matches == 2:
+                destination.score *= 0.8
+            elif matches == 3:
+                destination.score *= 0.7
+            elif matches > 3:
+                destination.score *= 0.6
+
+            # 3. how big is the reduction factor? (load balancing)
+            destination.score *= destination.price_saver / destination.price_normal
         return sorted(suitable_offers, key=operator.attrgetter('score'))
 
 
 class Destination:
-    score = 0
+    score = 10
     activities = None
     dest_name = None
     start_name = None

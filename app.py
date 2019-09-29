@@ -42,7 +42,7 @@ class SBBSurprise(Resource):
         """
         body = request.get_json()
 
-        surprise = surpriseGenerator.Suprise(
+        surprise = surpriseGenerator.Surprise(
             body['startLocation'],
             body['departureDate'],
             body['departureTime'],
