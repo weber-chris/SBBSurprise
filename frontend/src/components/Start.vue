@@ -8,7 +8,7 @@
     <div class="content">
       <div id="location-selection">
         <span class="title">Start location</span>
-        <img id="current-location-icon" src="../assets/group.svg" v-bind:hidden="startLocation != 'Current Location'" />
+        <img id="current-location-icon" src="../assets/location.svg" v-bind:hidden="startLocation != 'Current Location'" />
         <input  id="start-location" v-model="startLocation" type="text" v-on:click="startLocation = ''" />
       </div>
       <div id="departure-selection">
@@ -27,7 +27,7 @@
         <button id="radio-early-return" class="radio" v-on:click="returnTime='early'" v-bind:class="returnTime == 'early' ? 'radio-checked' : 'radio-unchecked'"></button>
         <span v-on:click="returnTime='early'">Before dinner</span>
         <button id="radio-late-return" class="radio" v-on:click="returnTime='late'" v-bind:class="returnTime == 'late' ? 'radio-checked' : 'radio-unchecked'"></button>
-        <span v-on:click="returnTime='late'">After dinner</span>
+        <span v-on:click="returnTime='late'">After</span>
       </div>
       <div id="budget-selection">
         <span class="title">Budget</span>
@@ -129,6 +129,8 @@ export default {
   object-fit: contain;
   float: right;
   display: block;
+  position: relative;
+  right: 32px;
 }
 
 .content > div {  
@@ -302,7 +304,7 @@ width: 100%;
 }
 
 #surprise-me {
-  width: 343px;
+  width: 304px;
   height: 50px;
   border-radius: 6px;
   border: 0px;
@@ -318,5 +320,9 @@ width: 100%;
   text-align: center;
   color: #ffffff;
   margin: 16px 19px;
+}
+
+#start {
+  overflow: hidden;
 }
 </style>

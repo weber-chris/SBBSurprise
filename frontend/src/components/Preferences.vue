@@ -1,6 +1,6 @@
 <template>
   <div id="preferences">
-    <div v-bind:hidden="page==2">
+    <div v-bind:hidden="page!=1">
       <div class="navigation">
         <img src="../assets/path.svg" id="back" v-on:click="$router.push('/')" />
         <span id="title">SBB Surprise</span>
@@ -50,6 +50,19 @@
         <span id="skip" v-on:click="getOffers">Skip this step</span>
       </div>
     </div>
+    <div id="loading-screen" v-bind:hidden="page!=3">
+      <div class="navigation-transparent">
+        <span id="title">SBB Surprise</span>
+        <img id="logo" src="../assets/path-2881.svg" />
+      </div>
+      <div id="prompt-white">
+        Let's find your unique trip...
+      </div>
+      <div id="tip-white">
+        This can take a few seconds
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -57,6 +70,7 @@
 export default {
   name: 'Preferences',
   props: ['user'],
+  loading: false,
   data () {
     return {
       page: 1,
@@ -81,10 +95,15 @@ export default {
     getOffers: function () {
       this.$parent.user.preferences = this.preferences;
       console.log(this.$parent.user);
-      this.$http.get("/", {params: this.$parent.user})
+      this.loading = true;
+      this.page = 3;
+      this.$http.post("/", this.$parent.user)
         .then((result) => {
         this.data = result.data;
         console.log(this.data);
+        this.$parent.results = this. data;
+        this.loading = false;
+        this.$router.push('results');
       })
     }
   }
@@ -96,6 +115,12 @@ export default {
 .navigation {
   width: 100%;
   background-color: #ea0100;
+  padding: 16px;
+  height: 16px;
+}
+
+.navigation-transparent {
+  width: 100%;
   padding: 16px;
   height: 16px;
 }
@@ -129,6 +154,8 @@ export default {
   object-fit: contain;
   float: right;
   display: block;
+  position: relative;
+  right: 32px;
 }
 
 #prompt {
@@ -146,6 +173,38 @@ export default {
   display: block;
   margin: auto;
   margin-top: 32px;
+}
+
+#prompt-white {
+  width: 211px;
+  height: 60px;
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: 1.36;
+  letter-spacing: 0.46px;
+  text-align: center;
+  color: #fff;
+  display: block;
+  margin: auto;
+  margin-top: 64px;
+}
+
+#tip-white {
+    font-size: 12px;
+  font-weight: 300;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: 0.25px;
+  color: #fff;
+  display: block;
+  font-family: 'Source Sans Pro', sans-serif;
+  margin: auto;
+  text-align: center;
+  margin-top: 8px;
 }
 
 #tip, #progress, #skip {
@@ -169,8 +228,8 @@ export default {
 
 
 .content > img {
-  width: 50px;
-  height: 50px;
+  width: 100px;
+  height: 100px;
 }
 
 .footer {
@@ -184,7 +243,7 @@ width: 100%;
 }
 
 #next {
-  width: 343px;
+  width: 304px;
   height: 50px;
   border-radius: 6px;
   border: 0px;
@@ -201,5 +260,24 @@ width: 100%;
   color: #ffffff;
   margin: 16px 19px;
 }
+
+#loading-screen {
+  width: 100vw;
+  height: 100vh;
+  background-image: url('../assets/claudio-schwarz-purzlbaum-xnHSJ_6y2Io-unsplash.jpg');
+  background-size: 375px 812px;
+  -webkit-filter: sepia(50%) hue-rotate(0deg) saturate(70%);
+  filter: sepia(50%) hue-rotate(0deg) saturate(70%);
+  overflow: hidden;
+  }
+
+  #preferences > div {
+    overflow: hidden;
+  }
+
+  .footer > span {
+    position: relative;
+    right: 16px;
+  }
 
 </style>

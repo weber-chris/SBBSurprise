@@ -9,7 +9,8 @@ export default {
   name: 'App',
   data () {
     return {
-      user: {}
+      user: {},
+      results: []
     }
   }
 }
