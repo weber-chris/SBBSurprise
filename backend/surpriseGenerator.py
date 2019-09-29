@@ -131,7 +131,7 @@ class Surprise:
                                trip_priced_go[1] + trip_priced_return[1], query_trip_result_go[1],
                                query_trip_result_return[1], query_trip_result_go[2], query_trip_result_return[2],
                                query_trip_result_go[3], query_trip_result_return[3],
-                               self.startLocation)
+                               self.startLocation, self.trip_date)
             saver_trips.append(dest)
             print('Dest_Id: {}, Price: {}, Normal: {}, Start-Go: {}, Start-Return: {}'.format(dest.dest_id,
                                                                                               dest.price_saver,
@@ -273,7 +273,7 @@ class Destination:
 
     def __init__(self, dest_id, price_saver, price_normal, start_time_go, start_time_return, end_time_go,
                  end_time_return, duration_go,
-                 duration_return, start_name):
+                 duration_return, start_name, trip_date):
         self.dest_id = dest_id
         self.price_saver = price_saver
         self.price_normal = price_normal
@@ -291,6 +291,7 @@ class Destination:
         self.duration_go = duration_go
         self.duration_return = duration_return
         self.start_name = start_name
+        self.trip_date = datetime.strptime(trip_date, '%Y-%m-%d').strftime('%a., %d.%m.%Y')
 
     @staticmethod
     def datetime_to_approx_hour(d):

@@ -31,9 +31,10 @@ class SBBSurprise(Resource):
         return [{
             "start_name": o.start_name,
             "dest_name": o.dest_name,
-            "price_saver": o.price_saver,
-            "price_normal": o.price_normal,
-            "saved_perc": '{0:.2f}%'.format((1 - o.price_saver / o.price_normal) * 100),
+            "price_saver": self.pretty_currency(o.price_saver),
+            "price_normal": self.pretty_currency(o.price_normal),
+            "price_rebate": self.pretty_currency(o.price_normal - o.price_saver),
+            "saved_perc": '{0:.0f}%'.format((1 - o.price_saver / o.price_normal) * 100),
             "start_time_go": o.start_time_go,
             "start_time_go_approx": o.start_time_go_approx,
             "start_time_return": o.start_time_return,
@@ -44,9 +45,17 @@ class SBBSurprise(Resource):
             "end_time_return_approx": o.end_time_return_approx,
             "duration_go": o.duration_go,
             "duration_return": o.duration_return,
+            "trip_date": o.trip_date,
             "score": o.score,
             "activities": o.activities
         } for o in offers], 201
+
+    @staticmethod
+    def pretty_currency(amount):
+        if (amount / 100.).is_integer():
+            return 'Fr. {0:.0f}.-'.format(amount / 100.)
+        else:
+            return 'Fr. {0:.2f}'.format(amount / 100.)
 
 
 api.add_resource(SBBSurprise, '/')
