@@ -298,7 +298,7 @@ width: 100%;
   border-top: solid 1px #e5e5e5;
   background-color: #f6f6f6;
   position: absolute;
-  bottom: -75px;
+  bottom: 0px;
   width: 100%;
   padding: 16px;
 }

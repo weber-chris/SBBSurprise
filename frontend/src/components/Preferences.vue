@@ -10,7 +10,7 @@
         <span id="prompt">Tell us something about you</span>
         <span id="tip">Tap on the images you like</span>
 
-        <img v-bind:src="categories[0].img" v-on:click="preferences.push(categories[0].name)" />
+        <img v-bind:class="preferences.includes(categories[0].name) ? 'selected' : ''" v-bind:src="categories[0].img" v-on:click="preferences.push(categories[0].name)" />
         <img v-bind:src="categories[1].img" v-on:click="preferences.push(categories[1].name)" />
         <img v-bind:src="categories[2].img" v-on:click="preferences.push(categories[2].name)" />
         <img v-bind:src="categories[3].img" v-on:click="preferences.push(categories[3].name)" />
@@ -228,8 +228,15 @@ export default {
 
 
 .content > img {
-  width: 100px;
+  width: 130px;
   height: 100px;
+  margin-left: 32px;
+  margin-top: 32px;
+}
+
+.selected {
+  border-radius: 4px;
+  border: solid 2px #ea0100;
 }
 
 .footer {
@@ -237,7 +244,7 @@ width: 100%;
   border-top: solid 1px #e5e5e5;
   background-color: #f6f6f6;
   position: absolute;
-  bottom: -75px;
+  bottom: 0px;
   width: 100%;
   padding: 16px;
 }
