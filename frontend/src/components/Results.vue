@@ -7,32 +7,72 @@
     </div>
     <div class="content">
       <div class="travel-path">
-        <span id="start-departure-location">{{ results[result].start_name }}</span>
-        <span id="start-departure-time">{{ results[result].start_time_go }}</span>
-        <span id="start-arrival-location" class="surprise">Surprise</span>
-        <span id="start-arrival-time">{{ /*results[result].start_time_go +*/ results[result].duration_go}}</span>
-
-        <span id="return-departure-location" class="surprise">Surprise</span>
-        <span id="return-departure-time">{{ results[result].start_time_return }}</span>
-        <span id="return-arrival-location">{{ results[result].start_name }}</span>
-        <span id="return-arrival-time">{{ results[result].start_time_return + results[result].duration_return}}</span>
-
-        <span id="travel-date">{{ results[result].start_time_go }}</span>
+        <table>
+          <tr>
+            <td>
+              <span id="start-departure-location">{{ results[result].start_name }}</span>
+            </td>
+            <td style="text-align: center;">
+              <img style="width: 150px;" src="../assets/go.svg" />
+            </td>
+            <td style="text-align:right">
+              <span id="start-arrival-location" class="surprise">Surprise</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span id="start-departure-time">~{{ results[result].start_time_go_approx }}</span>
+            </td>
+            <td>
+            </td>
+            <td style="text-align:right">
+              <span id="start-arrival-time">~{{ results[result].end_time_go_approx }}</span>
+            </td>
+          </tr>
+          <tr style="height: 16px;">
+          </tr>
+          <tr>
+            <td>
+              <span id="return-departure-location" class="surprise">Surprise</span>
+            </td>
+            <td style="text-align: center;">
+              <img style="width: 150px;" src="../assets/back.svg" />
+            </td>
+            <td style="text-align:right">
+              <span id="return-arrival-location">{{ results[result].start_name }}</span>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              <span id="return-departure-time">~{{ results[result].start_time_return_approx }}</span>
+            </td>
+            <td>
+            </td>
+            <td style="text-align:right">
+              <span id="return-arrival-time">~{{ results[result].end_time_return_approx}}</span>
+            </td>
+          </tr>
+        </table>
+        <span id="travel-date">{{ results[result].trip_date }}</span>
       </div>
       <div class="tickets">
-        <span id="ticket-count">Number of tickets</span>
+        <div id="ticket-count">Number of tickets <img src="../assets/i.svg" /></div>
         <span id="total-tickets-count" class="large">{{ user.personCountFull + user.personCountHalf}}</span>
         <span id="total-tickets-full" class="annotation">{{ user.personCountFull }} x full price</span>
         <span id="total-tickers-half" class="annotation">{{ user.personCountHalf }} x half price</span>
       </div>
       <div class="price">
-        <span id="trip-price-title">Total price</span>
-        <span id="price" class="large">Fr. {{ results[result].price_saver/100 }}</span>
-        <span id="savings">Fr. {{ (results[result].price_normal - results[result].price_saver)/100 }} saved</span>
+        <div id="trip-price-title">Total price <img src="../assets/i.svg" /></div>
+        <span id="price" class="large">{{ results[result].price_saver }}</span>
+        <span id="savings">{{ results[result].saved_perc + ' or ' + results[result].price_rebate }} saved</span>
       </div>
     </div>
     <div class="footer">
-      <button id="buy" v-on:click="buy">Book for Fr. {{ results[result].price_saver / 100 }}</button>
+      <div id="roll" v-on:click="roll" style="text-align: center">
+        <img id="roll-icon" src="../assets/roll.svg" /><br />
+        <div id="try-again">Try again</div>
+      </div>
+      <button id="buy" v-on:click="buy">Book for {{ results[result].price_saver }}</button>
     </div>  
   </div>
 </template>
@@ -50,6 +90,9 @@ export default {
   methods: {
     buy: function() {
       console.log(this.results);
+    },
+    roll: function() {
+      this.result++;
     }
   }
 }
@@ -154,7 +197,7 @@ width: 100%;
 }
 
 #buy {
-  width: 304px;
+  width: 260px;
   height: 50px;
   border-radius: 6px;
   border: 0px;
@@ -190,9 +233,16 @@ width: 100%;
 }
 
 .surprise {
-  padding: 4px;
+  padding: 0px 4px;
   border-radius: 3px;
   background-color: #ea0100; 
+}
+
+table {
+  border: 0px;
+  padding: 0px;
+  margin: 0px;
+  width: 343px;
 }
 
 #ticket-count, #trip-price-title {
@@ -245,5 +295,43 @@ width: 100%;
   position: relative;
   top: -2px;
   margin-left: 16px;
+}
+
+#travel-date {
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 16px;
+  font-weight: 300;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: 0.33px;
+  color: #ffffff;
+  display: block;
+  margin: auto;
+  text-align: center;
+  width: 100%;
+  position: relative;
+  right: 16px;
+  margin-top: 16px;
+}
+
+#roll {
+  display: inline-block;
+  position: relative;
+  top: 16px;
+}
+
+#try-again {
+  display: inline-block;
+
+  font-family: 'Source Sans Pro', sans-serif;
+  font-size: 12px;
+  font-weight: 300;
+  font-style: normal;
+  font-stretch: normal;
+  line-height: normal;
+  letter-spacing: 0.25px;
+  text-align: center;
+  color: #1e1e1e;
 }
 </style>

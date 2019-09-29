@@ -11,11 +11,11 @@
         <span id="tip">Tap on the images you like</span>
 
         <img v-bind:class="preferences.includes(categories[0].name) ? 'selected' : ''" v-bind:src="categories[0].img" v-on:click="preferences.push(categories[0].name)" />
-        <img v-bind:src="categories[1].img" v-on:click="preferences.push(categories[1].name)" />
-        <img v-bind:src="categories[2].img" v-on:click="preferences.push(categories[2].name)" />
-        <img v-bind:src="categories[3].img" v-on:click="preferences.push(categories[3].name)" />
-        <img v-bind:src="categories[4].img" v-on:click="preferences.push(categories[4].name)" />
-        <img v-bind:src="categories[5].img" v-on:click="preferences.push(categories[5].name)" />
+        <img v-bind:class="preferences.includes(categories[1].name) ? 'selected' : ''" v-bind:src="categories[1].img" v-on:click="preferences.push(categories[1].name)" />
+        <img v-bind:class="preferences.includes(categories[2].name) ? 'selected' : ''" v-bind:src="categories[2].img" v-on:click="preferences.push(categories[2].name)" />
+        <img v-bind:class="preferences.includes(categories[3].name) ? 'selected' : ''" v-bind:src="categories[3].img" v-on:click="preferences.push(categories[3].name)" />
+        <img v-bind:class="preferences.includes(categories[4].name) ? 'selected' : ''" v-bind:src="categories[4].img" v-on:click="preferences.push(categories[4].name)" />
+        <img v-bind:class="preferences.includes(categories[5].name) ? 'selected' : ''" v-bind:src="categories[5].img" v-on:click="preferences.push(categories[5].name)" />
         
 
       </div>
@@ -35,12 +35,12 @@
         <span id="prompt">Interesting, what about these?</span>
         <span id="tip">Tap on the images you like</span>
 
-        <img v-bind:src="categories[6].img" v-on:click="preferences.push(categories[6].name)" />
-        <img v-bind:src="categories[7].img" v-on:click="preferences.push(categories[7].name)" />
-        <img v-bind:src="categories[8].img" v-on:click="preferences.push(categories[8].name)" />
-        <img v-bind:src="categories[9].img" v-on:click="preferences.push(categories[9].name)" />
-        <img v-bind:src="categories[10].img" v-on:click="preferences.push(categories[10].name)" />
-        <img v-bind:src="categories[11].img" v-on:click="preferences.push(categories[11].name)" />
+        <img v-bind:class="preferences.includes(categories[6].name) ? 'selected' : ''" v-bind:src="categories[6].img" v-on:click="preferences.push(categories[6].name)" />
+        <img v-bind:class="preferences.includes(categories[7].name) ? 'selected' : ''" v-bind:src="categories[7].img" v-on:click="preferences.push(categories[7].name)" />
+        <img v-bind:class="preferences.includes(categories[8].name) ? 'selected' : ''" v-bind:src="categories[8].img" v-on:click="preferences.push(categories[8].name)" />
+        <img v-bind:class="preferences.includes(categories[9].name) ? 'selected' : ''" v-bind:src="categories[9].img" v-on:click="preferences.push(categories[9].name)" />
+        <img v-bind:class="preferences.includes(categories[10].name) ? 'selected' : ''" v-bind:src="categories[10].img" v-on:click="preferences.push(categories[10].name)" />
+        <img v-bind:class="preferences.includes(categories[11].name) ? 'selected' : ''" v-bind:src="categories[11].img" v-on:click="preferences.push(categories[11].name)" />
         
 
       </div>
@@ -232,9 +232,10 @@ export default {
   height: 100px;
   margin-left: 32px;
   margin-top: 32px;
+  border: solid 2px #fff;
 }
 
-.selected {
+img.selected {
   border-radius: 4px;
   border: solid 2px #ea0100;
 }
