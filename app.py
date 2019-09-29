@@ -57,8 +57,10 @@ class SBBSurprise(Resource):
             "dest_name": o.dest_name,
             "price_saver": o.price_saver,
             "price_normal": o.price_normal,
-            "start_time": o.start_time,
-            "duration": o.duration,
+            "start_time_go": o.start_time_go,
+            "start_time_return": o.start_time_return,
+            "duration_go": o.duration_go,
+            "duration_return": o.duration_return,
             "score": o.score,
             "activities": o.activities
         } for o in offers], 201

@@ -113,20 +113,31 @@ class Suprise:
         for id, dest in suitable_destinations.iterrows():
             if len(saver_trips) > 1:
                 break
-            if start_id != dest['dest_id']:
-                query_trip_result = self.__query_trip(start_id, dest['dest_id'])
-                if query_trip_result:
-                    trip_id, start_time, duration = query_trip_result[0], query_trip_result[1], query_trip_result[2]
-                    super_destination = self.__query_price(trip_id)
-                    if super_destination:
-                        dest = Destination(dest['dest_id'], super_destination[0], super_destination[1], start_time,
-                                           duration, self.startLocation)
-                        saver_trips.append(dest)
-                        print('Dest_Id: {}, Price: {}, Normal: {}, Start: {}'.format(dest.dest_id, dest.price_saver,
-                                                                                     dest.price_normal,
-                                                                                     dest.start_time))
+            if start_id == dest['dest_id']:
+                continue
+            query_trip_result_go = self.__query_trip(start_id, dest['dest_id'], self.departure_timestamp)
+            if query_trip_result_go is None:
+                continue
+            query_trip_result_return = self.__query_trip(dest['dest_id'], start_id, self.return_timestamp)
+            if query_trip_result_return is None:
+                continue
+            trip_priced_go = self.__query_price(query_trip_result_go[0])
+            if trip_priced_go is None:
+                continue
+            trip_priced_return = self.__query_price(query_trip_result_return[0])
+            if trip_priced_return is None:
+                continue
+            dest = Destination(dest['dest_id'], trip_priced_go[0] + trip_priced_return[0],
+                               trip_priced_go[1] + trip_priced_return[1], query_trip_result_go[1],
+                               query_trip_result_return[1], query_trip_result_go[2], query_trip_result_return[2],
+                               self.startLocation)
+            saver_trips.append(dest)
+            print('Dest_Id: {}, Price: {}, Normal: {}, Start-Go: {}, Start-Return: {}'.format(dest.dest_id,
+                                                                                              dest.price_saver,
+                                                                                              dest.price_normal,
+                                                                                              dest.start_time_go,
+                                                                                              dest.start_time_return))
 
-        print(saver_trips)
         return saver_trips
 
     def __query_location(self, location):
@@ -152,11 +163,11 @@ class Suprise:
 
         return location_id, location_name
 
-    def __query_trip(self, from_id, to_id):
+    def __query_trip(self, from_id, to_id, timestamp):
         url = "https://b2p-int.api.sbb.ch/api/trips"
 
         querystring = {"arrivalDeparture": "ED", "date": self.trip_date, "destinationId": to_id,
-                       "originId": from_id, "time": self.departure_timestamp}
+                       "originId": from_id, "time": timestamp}
 
         headers = {
             'Authorization': "Bearer {}".format(self.token),
@@ -237,21 +248,18 @@ class Suprise:
 
 
 class Destination:
-    dest_id = None
-    price_saver = -1
-    price_normal = -1
-    duration = -1
-    start_time = None
-
     score = 0
     activities = None
     dest_name = None
     start_name = None
 
-    def __init__(self, dest_id, price_saver, price_normal, start_time, duration, start_name):
+    def __init__(self, dest_id, price_saver, price_normal, start_time_go, start_time_return, duration_go,
+                 duration_return, start_name):
         self.dest_id = dest_id
         self.price_saver = price_saver
         self.price_normal = price_normal
-        self.start_time = start_time
-        self.duration = duration
+        self.start_time_go = start_time_go
+        self.start_time_return = start_time_return
+        self.duration_go = duration_go
+        self.duration_return = duration_return
         self.start_name = start_name
