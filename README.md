@@ -7,7 +7,7 @@
 - (optional for DB manipulation) [SQLite](https://www.sqlite.org/)
 
 ### Dependencies
-`pip install flask flask-restful flask-cors`
+`pip install flask flask-restful flask-cors pandas requests`
 
 
 ### Run
